@@ -6,13 +6,15 @@ from image_folder import ImageFolder
 from builtins import object
 
 class PairedData(object):
-    def __init__(self, data_loader_A, data_loader_B, max_dataset_size, flip):
+    def __init__(self, data_loader_A, data_loader_B, max_dataset_size, flip, opt):
         self.data_loader_A = data_loader_A
         self.data_loader_B = data_loader_B
         self.stop_A = False
         self.stop_B = False
         self.max_dataset_size = max_dataset_size
         self.flip = flip
+        self.input_nc = opt.input_nc # rui
+        self.output_nc = opt.output_nc # rui
 
     def __iter__(self):
         self.stop_A = False
@@ -52,6 +54,14 @@ class PairedData(object):
                 idx = torch.LongTensor(idx)
                 A = A.index_select(3, idx)
                 B = B.index_select(3, idx)
+            # rui add for gray
+            if self.input_nc == 1:
+                tmp = A[:,0, ...] * 0.299 + A[:,1, ...] * 0.587 + A[:,2, ...] * 0.114
+                A = tmp.unsqueeze(1)
+            if self.output_nc == 1:
+                tmp = B[:,0, ...] * 0.299 + B[:,1, ...] * 0.587 + B[:,2, ...] * 0.114
+                B = tmp.unsqueeze(1)
+            # rui
             return {'A': A, 'A_paths': A_paths,
                     'B': B, 'B_paths': B_paths}
 
@@ -89,8 +99,10 @@ class UnalignedDataLoader(BaseDataLoader):
         self.dataset_A = dataset_A
         self.dataset_B = dataset_B
         flip = opt.isTrain and not opt.no_flip
+        #self.paired_data = PairedData(data_loader_A, data_loader_B, 
+        #                              self.opt.max_dataset_size, flip)
         self.paired_data = PairedData(data_loader_A, data_loader_B, 
-                                      self.opt.max_dataset_size, flip)
+                                      self.opt.max_dataset_size, flip, self.opt) # rui
 
     def name(self):
         return 'UnalignedDataLoader'

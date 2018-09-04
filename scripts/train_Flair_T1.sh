@@ -1,1 +1,1 @@
-python train.py --dataroot ../datasets/BRATS_images/ --dataA Synthetic_Flair --dataB Synthetic_T1 --name distancegan_brats_flair_t1 --model distance_gan
+python train.py --dataroot ../datasets/BRATS_images/ --dataA Synthetic_Flair --dataB Synthetic_T1 --name distancegan_brats_flair_t1 --model distance_gan --input_nc 1 --output_nc 1 --gpu_ids 0,1,2,3 --batchSize 4 
